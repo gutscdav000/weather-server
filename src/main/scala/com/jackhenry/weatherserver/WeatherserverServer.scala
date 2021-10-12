@@ -14,17 +14,15 @@ object WeatherserverServer {
   def stream[F[_]: Async]: Stream[F, Nothing] = {
     for {
       client <- Stream.resource(EmberClientBuilder.default[F].build)
-      helloWorldAlg = HelloWorld.impl[F]
-      jokeAlg = Jokes.impl[F](client)
+      forecastAlg = Forecasts.impl[F](client)
 
       // Combine Service Routes into an HttpApp.
       // Can also be done via a Router if you
       // want to extract a segments not checked
       // in the underlying routes.
       httpApp = (
-        WeatherserverRoutes.helloWorldRoutes[F](helloWorldAlg) <+>
-        WeatherserverRoutes.jokeRoutes[F](jokeAlg)
-      ).orNotFound
+        WeatherserverRoutes.forecastRoutes[F](forecastAlg)
+        ).orNotFound
 
       // With Middlewares in place
       finalHttpApp = Logger.httpApp(true, true)(httpApp)
