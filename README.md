@@ -22,9 +22,9 @@ There is currently an Alert in Cody, Wyoming
 
 [localhost:8080/forecast?lat=42.5263&long=-109.0565]()
 
-There is not currently an alert in St. Petersburg, Florida
+There is not currently an alert in St. Petersburg, Florida. Since my relative temperature interpretation is golf related, Naturally one of my endpoint calls should be at a golf course.
 
-[localhost:8080/forecast?lat=42.5263&long=-109.0565]()
+[localhost:8080/forecast?lat=27.72964648187172&long=-82.66093295937623]()
 
 You may also invoke this endpoint with your own API key as shown below:
 
