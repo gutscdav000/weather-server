@@ -39,14 +39,7 @@ object Forecasts {
           case Some(als) => als.map(a => a.sender_name + ": " + a.event).reduce((s1, s2) => s1 + "\n" + s2)
           case None => "No current weather Alerts"
         }
-
-        relativeTemp: String = temperature match {
-          case temp: Double if(temp < 80.0) => "Go to the range, the snowbird have taken all the tee times."
-          case temp: Double if(temp < 85.0) => "You should go walk 18, it's a really nice day."
-          case temp: Double if(temp < 90.0) => "You should go play 18, but don't forget your rain gloves or you'll sweat through your normal ones."
-          case temp: Double if(temp < 95.0) => "You should go ride 18, no one is crazy enough to be on the course."
-          case _ => "You're on your own kid, no recommendation from us."
-        }
+        relativeTemp: String = getRelativeTemp(temperature)
 
       } yield ForecastResponse(condition, temperature, relativeTemp, parsedAlerts)
     implicit def entityDecoder[F[_]: Concurrent]: EntityDecoder[F, ForecastResponse] = jsonOf
@@ -54,6 +47,14 @@ object Forecasts {
     implicit val forecastEncoder: Encoder[ForecastResponse] = deriveEncoder[ForecastResponse]
     implicit def forecastEntityEncoder[F[_]]: EntityEncoder[F, ForecastResponse] =
       jsonEncoderOf
+
+    def getRelativeTemp(realTemp: Double): String = realTemp match {
+      case temp: Double if(temp < 80.0) => "Go to the range, the snowbird have taken all the tee times."
+      case temp: Double if(temp < 85.0) => "You should go walk 18, it's a really nice day."
+      case temp: Double if(temp < 90.0) => "You should go play 18, but don't forget your rain gloves or you'll sweat through your normal ones."
+      case temp: Double if(temp < 95.0) => "You should go ride 18, no one is crazy enough to be on the course."
+      case _ => "You're on your own kid, no recommendation from us."
+    }
   }
 
   def impl[F[_]: Concurrent](C: Client[F]): Forecasts[F] = new Forecasts[F]{
