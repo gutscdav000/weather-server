@@ -12,6 +12,7 @@ import org.http4s.circe._
 import org.http4s.Method._
 import org.http4s.headers.Accept
 import io.circe.generic.auto._
+import natchez.{Trace, TraceValue}
 
 trait Forecasts[F[_]]{
   def get(lat: Double, long: Double, appId: String): F[Forecasts.ForecastResponse]
@@ -57,24 +58,33 @@ object Forecasts {
     }
   }
 
-  def impl[F[_]: Concurrent](C: Client[F]): Forecasts[F] = new Forecasts[F]{
+  def impl[F[_]: Concurrent: Trace](C: Client[F]): Forecasts[F] = new Forecasts[F]{
     val dsl = new Http4sClientDsl[F]{}
     import dsl._
-    def get(lat: Double, long: Double, appId: String): F[Forecasts.ForecastResponse] = {
-      C.expect[ForecastResponse](GET(
-        uri"https://api.openweathermap.org/data/2.5/onecall"
-          .withQueryParam("lat", lat)
-          .withQueryParam("lon", long)
-          .withQueryParam("appid", appId)
-          .withQueryParam("units", "imperial")
-          .withQueryParam("exclude", "minutely,hourly,daily")
-        ,
-        Accept(MediaType.application.json)
-      ))
-        .adaptError{ case t => {
-          println("ERROR: " + t)
-          throw ForecastError(t)
-        }} // Prevent Client Json Decoding Failure Leaking
-    }
+    def get(lat: Double, long: Double, appId: String): F[Forecasts.ForecastResponse] =
+      Trace[F].span("getForecast") {
+        val inputs: List[(String, natchez.TraceValue)] = ("lat" -> TraceValue.NumberValue(lat)) :: ("long" -> TraceValue.NumberValue(long)) :: Nil
+        for {
+          _ <- Trace[F].put(inputs: _*)
+          _ <- Trace[F].put("lat" -> TraceValue.NumberValue(lat))
+          _ <- Trace[F].put("long" -> TraceValue.NumberValue(long))
+          _ <- Trace[F].put("input" -> "testing")
+        } yield s"$inputs"
+
+        C.expect[ForecastResponse](GET(
+          uri"https://api.openweathermap.org/data/2.5/onecall"
+            .withQueryParam("lat", lat)
+            .withQueryParam("lon", long)
+            .withQueryParam("appid", appId)
+            .withQueryParam("units", "imperial")
+            .withQueryParam("exclude", "minutely,hourly,daily")
+          ,
+          Accept(MediaType.application.json)
+        ))
+          .adaptError{ case t => {
+            println("ERROR: " + t)
+            throw ForecastError(t)
+          }} // Prevent Client Json Decoding Failure Leaking
+      }
   }
 }
