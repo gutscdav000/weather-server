@@ -14,8 +14,7 @@ trait TracingEntryPoint {
     implicit ev: MonadError[F, Throwable]
   ): HttpRoutes[F] = {
     val forecastAlg = Forecasts.impl[F](client)
-    val httpRoutes = WeatherserverRoutes.forecastRoutes[F](forecastAlg, weatherApiKey)
-    httpRoutes
+    WeatherserverRoutes.forecastRoutes[F](forecastAlg, weatherApiKey)
   }
 
   def entryPoint[F[_]: Sync](writeKey: String, service: String, dataSet: String): Resource[F, EntryPoint[F]] =

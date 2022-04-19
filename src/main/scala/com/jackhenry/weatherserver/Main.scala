@@ -1,6 +1,5 @@
 package com.jackhenry.weatherserver
 
-import cats.effect.{ExitCode, IO, IOApp}
 import cats.effect._
 import org.http4s.ember.server.EmberServerBuilder
 import org.http4s.ember.client.EmberClientBuilder
@@ -12,8 +11,6 @@ import com.comcast.ip4s._
 import com.typesafe.config.ConfigFactory
 
 object Main extends IOApp with TracingEntryPoint {
-//  def run(args: List[String]) =
-//    WeatherserverServer.stream[IO].compile.drain.as(ExitCode.Success)
 
   def run(args: List[String]) = server[IO].use(_ => IO.never)
 
