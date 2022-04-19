@@ -6,7 +6,7 @@ import org.http4s.{ HttpRoutes}
 import org.http4s.dsl.Http4sDsl
 
 object WeatherserverRoutes {
-  def forecastRoutes[F[_]: Sync](forecasts: Forecasts[F]): HttpRoutes[F] = {
+  def forecastRoutes[F[_]: Sync](forecasts: Forecasts[F], weatherApiKey: String): HttpRoutes[F] = {
     val dsl = new Http4sDsl[F]{}
     import dsl._
 
@@ -16,29 +16,24 @@ object WeatherserverRoutes {
     object appIdParam extends OptionalQueryParamDecoderMatcher[String]("appid")
 
     def validateInputs(lat: Option[Double], long: Option[Double]): Boolean = {
-      val notNone = (an: Option[Any]) => {
+      val notNone = (an: Option[Any]) =>
         an match {
-          case Some(a) => {
-            println(a)
-            true
-          }
+          case Some(a) => true
           case None => false
         }
-      }
+
       notNone(lat) && notNone(long)
     }
 
     HttpRoutes.of[F] {
-      case GET -> Root / "forecast" :? LatParam(lat) +& LongParam(long) +& appIdParam(appId)  => {
+      case GET -> Root / "forecast" :? LatParam(lat) +& LongParam(long) +& appIdParam(appId)  =>
         validateInputs(lat, long) match {
           case true => for {
-            forecast <- forecasts.get(lat.get, long.get, appId.getOrElse("c19e084e82bf8e9f5df9f3fad34442f5"))
+            forecast <- forecasts.get(lat.get, long.get, appId.getOrElse(weatherApiKey))
             resp <- Ok(forecast)
           } yield resp
           case false => BadRequest("Invalid Parameter!")
         }
-
-      }
 
     }
   }
