@@ -26,7 +26,6 @@ lazy val root = (project in file("."))
       "ch.qos.logback"  %  "logback-classic"     % LogbackVersion,
       "io.chrisdavenport"           %% "fiberlocal"           % "0.1.1",
       "org.tpolecat" %% "natchez-core" % natchezVersion,
-      "org.tpolecat" %% "natchez-jaeger"      % natchezVersion,
       "org.tpolecat" %% "natchez-honeycomb" % natchezVersion,
       "io.chrisdavenport" %% "natchez-http4s-otel" % "0.1.0",
       "com.typesafe" % "config" % "1.4.1",
